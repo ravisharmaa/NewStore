@@ -17,6 +17,7 @@ This work is a mimic of AppStoreUI Implementation. A simple trial to re-create t
 2. To Apple again for WW'19 Sample Code. 
 3. [Paul Hudson](https://www.youtube.com/channel/UCmJi5RdDLgzvkl3Ly0DRMlQ) for videos on CollectionView.
 4. [Brian Voong](https://www.youtube.com/channel/UCuP2vJ6kRutQBfRmdcI92mA) for the same.
+5. [NewsApi.org](https://newsapi.org) for free api.
 
 ### Disclaimer:
 
