@@ -6,7 +6,7 @@ This work is a mimic of AppStoreUI Implementation. A simple trial to re-create t
 
 1. Compositional Layout and multiple sections.
 2. Asynchronous fetch with Combine introduced in WW'19.
-3. Implementation of Combine instead of dispatch group and on network search
+3. Implementation of Combine instead of dispatch group on asychornus fetch and search.
 4. Use of DiffableDataSources introduced on WW'19
 5. Programmatic Auto-Layout.
 7. Supports Dark and Light Mode.
