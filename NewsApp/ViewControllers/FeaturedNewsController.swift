@@ -138,12 +138,11 @@ class FeaturedNewsController: UICollectionViewController {
             
             switch collectionViewSection {
             case .Business:
-                section.orthogonalScrollingBehavior = .paging
+                section.orthogonalScrollingBehavior = .groupPagingCentered
             default:
                 section.orthogonalScrollingBehavior = .groupPaging
             }
             
-            section.orthogonalScrollingBehavior = .continuousGroupLeadingBoundary
             
             return section
         }
