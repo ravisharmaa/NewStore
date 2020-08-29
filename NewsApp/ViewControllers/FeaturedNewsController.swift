@@ -99,7 +99,7 @@ class FeaturedNewsController: UICollectionViewController {
             
             let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(collectionViewSection.itemWidth), heightDimension: .fractionalHeight(collectionViewSection.itemHeight))
             
-            let badgeAnchor = NSCollectionLayoutAnchor(edges: [.leading, .trailing], fractionalOffset: .init(x: 0.05, y: 75))
+            let badgeAnchor = NSCollectionLayoutAnchor(edges: [.leading, .trailing], fractionalOffset: .init(x: 0.05, y: 105))
             
             let badgeSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(collectionViewSection.badgeWidth), heightDimension: .absolute(collectionViewSection.badgeHeight))
             
@@ -241,6 +241,10 @@ class FeaturedNewsController: UICollectionViewController {
                 }
                 
                 header.label.text = Section(rawValue: indexPath.section)?.description
+                
+                header.seeAllClickHandler = {
+                   
+                }
                 
                 return header
             } else {

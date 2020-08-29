@@ -14,7 +14,7 @@ class FeaturedCell: UICollectionViewCell {
         let imageView = UIImageView()
         
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.layer.cornerRadius = 8
+        imageView.layer.cornerRadius = 7
         imageView.contentMode = .scaleToFill
         imageView.clipsToBounds = true
         imageView.image = UIImage(named: "bloomberg")
@@ -45,33 +45,29 @@ class FeaturedCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        let contentStack = UIStackView(arrangedSubviews: [
-            newsContent
-        ])
-        
-        contentStack.axis = .vertical
-        
-       
-       let stack = UIStackView(arrangedSubviews: [
-        thumbnailImage, contentStack
+        let stack = UIStackView(arrangedSubviews: [
+            thumbnailImage, newsContent
        ])
         
         stack.spacing = 8
+        
+        stack.alignment = .fill
         
         addSubview(stack)
         
         stack.translatesAutoresizingMaskIntoConstraints = false
         
         stack.isLayoutMarginsRelativeArrangement = true
-        stack.layoutMargins = .init(top: 20, left: 20, bottom: 20, right: 20)
+        stack.layoutMargins = .init(top: 20, left: 20, bottom: 0, right: 20)
         
-        thumbnailImage.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        thumbnailImage.widthAnchor.constraint(equalToConstant: 64).isActive = true
+        thumbnailImage.heightAnchor.constraint(equalToConstant: 64).isActive = true
         
         NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
-            stack.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor),
-            stack.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor)
+            //stack.heightAnchor.constraint(equalTo: heightAnchor),
+            stack.leadingAnchor.constraint(equalTo: leadingAnchor),
+            stack.trailingAnchor.constraint(equalTo: trailingAnchor),
+            stack.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
     
