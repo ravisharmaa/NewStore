@@ -58,16 +58,3 @@ enum ApiConstants: CustomStringConvertible {
         }
     }
 }
-
-enum CellReuseIdentifiers: CustomStringConvertible {
-    
-    case NewsCell
-    
-    var description: String {
-        switch self {
-       
-        case .NewsCell:
-            return "NewsCell"
-        }
-    }
-}

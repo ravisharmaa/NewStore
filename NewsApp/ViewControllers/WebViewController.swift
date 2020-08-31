@@ -21,7 +21,7 @@ class WebViewController: UIViewController {
     }()
     
     fileprivate lazy var activityIndicator: UIActivityIndicatorView = {
-        let view = UIActivityIndicatorView(style: .large)
+        let view = UIActivityIndicatorView(style: .medium)
         view.hidesWhenStopped = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view

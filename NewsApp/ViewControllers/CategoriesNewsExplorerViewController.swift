@@ -56,7 +56,7 @@ class CategoriesNewsExplorerViewController: UITableViewController {
         
         navigationItem.searchController = searchController
         
-        tableView.register(BrowserCell.self, forCellReuseIdentifier: "browseMe")
+        tableView.register(BrowserCell.self, forCellReuseIdentifier: BrowserCell.reuseIdentifier)
         
         
         
@@ -85,7 +85,7 @@ class CategoriesNewsExplorerViewController: UITableViewController {
     fileprivate func configureDataSource() {
         
         dataSource = .init(tableView: tableView, cellProvider: { (tableView, indexPath, articles) -> UITableViewCell? in
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: "browseMe") as? BrowserCell else {
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: BrowserCell.reuseIdentifier) as? BrowserCell else {
                 return nil
             }
             

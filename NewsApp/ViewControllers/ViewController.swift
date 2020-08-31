@@ -81,8 +81,8 @@ class ViewController: UIViewController {
     fileprivate lazy var newsSourcesCollectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight ]
-        collectionView.register(NewsCell.self, forCellWithReuseIdentifier: CellReuseIdentifiers.NewsCell.description)
-        collectionView.register(CategoriesHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
+        collectionView.register(NewsCell.self, forCellWithReuseIdentifier: NewsCell.reuseIdentifier)
+        collectionView.register(CategoriesHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: CategoriesHeader.reuseIdentifier)
        
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.contentInsetAdjustmentBehavior = .never
@@ -197,7 +197,7 @@ class ViewController: UIViewController {
     func configureDataSource() {
         dataSource = .init(collectionView: newsSourcesCollectionView, cellProvider: { (collectionView, indexPath, item) -> UICollectionViewCell? in
             
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CellReuseIdentifiers.NewsCell.description, for: indexPath) as? NewsCell else {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NewsCell.reuseIdentifier, for: indexPath) as? NewsCell else {
                 fatalError()
             }
             
@@ -212,7 +212,7 @@ class ViewController: UIViewController {
         
         dataSource.supplementaryViewProvider = .some({ (collectionView, identifier, indexPath) -> UICollectionReusableView? in
            
-            guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header", for: indexPath) as? CategoriesHeader else {
+            guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: CategoriesHeader.reuseIdentifier, for: indexPath) as? CategoriesHeader else {
                 fatalError()
             }
             header.label.text = Section(rawValue: indexPath.section)?.description

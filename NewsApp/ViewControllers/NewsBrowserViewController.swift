@@ -31,7 +31,7 @@ class NewsBrowserViewController: UITableViewController {
     var item: [Everything.Articles] = []
     
     fileprivate lazy var activityIndicator: UIActivityIndicatorView = {
-        let view = UIActivityIndicatorView(style: .large)
+        let view = UIActivityIndicatorView(style: .medium)
         view.hidesWhenStopped = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -59,7 +59,7 @@ class NewsBrowserViewController: UITableViewController {
         
         tableView.showsVerticalScrollIndicator = false
         
-        tableView.register(BrowserCell.self, forCellReuseIdentifier: "browseMe")
+        tableView.register(BrowserCell.self, forCellReuseIdentifier: BrowserCell.reuseIdentifier)
         
         if tableView.visibleCells.isEmpty {
             let backGroundView = UIView(frame: tableView.bounds)
@@ -157,7 +157,7 @@ class NewsBrowserViewController: UITableViewController {
     fileprivate func configureDataSource() {
         
         dataSource = .init(tableView: tableView, cellProvider: { (tableView, indexPath, articles) -> UITableViewCell? in
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: "browseMe") as? BrowserCell else {
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: BrowserCell.reuseIdentifier) as? BrowserCell else {
                 return nil
             }
             

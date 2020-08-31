@@ -21,13 +21,12 @@ class FeaturedCell: UICollectionViewCell {
         return imageView
     }()
     
-    lazy var newsContent:UILabel = {
+    lazy var newsContent: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.numberOfLines = 0
         label.textColor = .label
-        
-        label.font = UIFont.systemFont(ofSize: 18)
+        label.font = UIFont.systemFont(ofSize: 15)
         return label
         
     }()

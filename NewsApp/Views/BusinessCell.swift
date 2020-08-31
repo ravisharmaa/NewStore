@@ -38,7 +38,7 @@ class BusinessCell: UICollectionViewCell {
     
     
     fileprivate lazy var activityIndicator: UIActivityIndicatorView = {
-        let view = UIActivityIndicatorView(style: .large)
+        let view = UIActivityIndicatorView(style: .medium)
         view.hidesWhenStopped = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -119,6 +119,6 @@ class CustomLabel: UILabel {
     }
     
     override func draw(_ rect: CGRect) {
-        super.drawText(in: rect.insetBy(dx: 5, dy: 0))
+        super.drawText(in: rect.insetBy(dx: 16, dy: 0))
     }
 }

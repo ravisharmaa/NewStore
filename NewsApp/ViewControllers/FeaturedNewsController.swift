@@ -38,26 +38,15 @@ class FeaturedNewsController: UICollectionViewController {
         }
         
         var itemWidth: CGFloat {
-            switch self {
-            default:
-                return 1.0
-            }
+            return 1.0
         }
         
         var groupHeight: CGFloat {
-            switch self {
-            default:
-                return 300
-            }
+            return 300
         }
         
         var groupWidth: CGFloat {
-            switch self {
-            case .Business:
-                return 0.95
-            default:
-                return 0.9
-            }
+            return 0.9
         }
         
         var contentInsets: CGFloat {
@@ -71,6 +60,20 @@ class FeaturedNewsController: UICollectionViewController {
         var badgeHeight: CGFloat {
             return 0.5
         }
+        
+        
+        func groupLayout(size: NSCollectionLayoutSize, items: [NSCollectionLayoutItem]) -> NSCollectionLayoutGroup {
+            switch self {
+            case .Business:
+                return NSCollectionLayoutGroup.horizontal(layoutSize: size, subitems: items)
+            default:
+                return NSCollectionLayoutGroup.vertical(layoutSize: size, subitems: items)
+            }
+        }
+        
+        var scrollingBehavior: UICollectionLayoutSectionOrthogonalScrollingBehavior {
+            return .groupPaging
+        }
     }
     
     var dataSource: UICollectionViewDiffableDataSource<Section, AnyHashable>!
@@ -82,7 +85,7 @@ class FeaturedNewsController: UICollectionViewController {
     var technologyItem: Everything!
     
     fileprivate lazy var activityIndicator: UIActivityIndicatorView = {
-        let view = UIActivityIndicatorView(style: .large)
+        let view = UIActivityIndicatorView(style: .medium)
         view.hidesWhenStopped = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -94,8 +97,6 @@ class FeaturedNewsController: UICollectionViewController {
             
             
             let collectionViewSection = Section(rawValue: sectionIndex)!
-            
-            let group: NSCollectionLayoutGroup!
             
             let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(collectionViewSection.itemWidth), heightDimension: .fractionalHeight(collectionViewSection.itemHeight))
             
@@ -122,27 +123,13 @@ class FeaturedNewsController: UICollectionViewController {
             
             let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .topLeading)
             
-            
-            switch collectionViewSection {
-            
-            case .Business:
-                group =  NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [items])
-            default:
-                group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [items])
-            }
-            
+            let group = collectionViewSection.groupLayout(size: groupSize, items: [items])
             
             let section = NSCollectionLayoutSection(group: group)
             
             section.boundarySupplementaryItems = [header]
             
-            switch collectionViewSection {
-            case .Business:
-                section.orthogonalScrollingBehavior = .groupPagingCentered
-            default:
-                section.orthogonalScrollingBehavior = .groupPaging
-            }
-            
+            section.orthogonalScrollingBehavior = collectionViewSection.scrollingBehavior
             
             return section
         }
@@ -161,10 +148,10 @@ class FeaturedNewsController: UICollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        collectionView.register(BusinessCell.self, forCellWithReuseIdentifier: "reuseMe")
-        collectionView.register(FeaturedCell.self, forCellWithReuseIdentifier: "reuseMeWe")
-        collectionView.register(CategoriesHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "header")
-        collectionView.register(BadgeView.self, forSupplementaryViewOfKind: "badge", withReuseIdentifier: "badgeView")
+        collectionView.register(BusinessCell.self, forCellWithReuseIdentifier: BusinessCell.reuseIdentifier)
+        collectionView.register(FeaturedCell.self, forCellWithReuseIdentifier: FeaturedCell.reuseIdentifier)
+        collectionView.register(CategoriesHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: CategoriesHeader.reuseIdentifier)
+        collectionView.register(BadgeView.self, forSupplementaryViewOfKind: "badge", withReuseIdentifier: BadgeView.reuseIdentifier)
         collectionView.backgroundColor = .systemBackground
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
@@ -199,7 +186,6 @@ class FeaturedNewsController: UICollectionViewController {
             self.configureDataSource()
             
         }.store(in: &subscription)
-        
     }
     
     fileprivate func configureDataSource() {
@@ -210,7 +196,7 @@ class FeaturedNewsController: UICollectionViewController {
             
             switch  section {
             case .Business:
-                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "reuseMe", for: indexPath) as? BusinessCell else {
+                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: BusinessCell.reuseIdentifier, for: indexPath) as? BusinessCell else {
                     return nil
                 }
                 
@@ -220,14 +206,13 @@ class FeaturedNewsController: UICollectionViewController {
                 
                 return cell
             default:
-                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "reuseMeWe", for: indexPath) as? FeaturedCell else {
+                guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FeaturedCell.reuseIdentifier, for: indexPath) as? FeaturedCell else {
                     fatalError()
                 }
                 
                 if let hashedObject = hashedObject as? Everything.Articles {
                     cell.field = hashedObject
                 }
-                
                 
                 return cell
             }
@@ -236,14 +221,14 @@ class FeaturedNewsController: UICollectionViewController {
         dataSource.supplementaryViewProvider = .some({ (collectionView, identifier, indexPath) -> UICollectionReusableView? in
             
             if identifier == UICollectionView.elementKindSectionHeader {
-                guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: identifier, withReuseIdentifier: "header", for: indexPath) as? CategoriesHeader else {
+                guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: identifier, withReuseIdentifier: CategoriesHeader.reuseIdentifier, for: indexPath) as? CategoriesHeader else {
                     return nil
                 }
                 
                 header.label.text = Section(rawValue: indexPath.section)?.description
                 
                 header.seeAllClickHandler = {
-                   
+                    
                 }
                 
                 return header
@@ -252,7 +237,7 @@ class FeaturedNewsController: UICollectionViewController {
                 let section = Section(rawValue: indexPath.section)!
                 
                 if section != .Business {
-                    guard let supplementary = collectionView.dequeueReusableSupplementaryView(ofKind: identifier, withReuseIdentifier: "badgeView", for: indexPath)
+                    guard let supplementary = collectionView.dequeueReusableSupplementaryView(ofKind: identifier, withReuseIdentifier: BadgeView.reuseIdentifier, for: indexPath)
                             as? BadgeView else { fatalError()}
                     
                     supplementary.backgroundColor = .lightGray
