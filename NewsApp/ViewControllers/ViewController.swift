@@ -41,28 +41,41 @@ class ViewController: UIViewController {
                 
             }
         }
+        
+        var name: String {
+            switch self {
+            case .Business:
+                return "business"
+            case .Entertainment:
+                return "entertainment"
+            case .General:
+                return "general"
+            case .Health:
+                return "health"
+            case .Science:
+                return "science"
+            case .Sports:
+                return "sports"
+            case .Technology:
+                return "technology"
+            }
+        }
     }
     
     //MARK:- Subscription
-    var subscription: Set<AnyCancellable> = Set<AnyCancellable>()
+    var subscription: Set<AnyCancellable> = []
     
     //MARK:- Datasource
-    var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
+    var dataSource: UICollectionViewDiffableDataSource<Section, AnyHashable>!
     
+    var groupedSource: [String: [Response.Source]] = [:]
     
-    var businessItems: [Item] = [Item]()
-    
-    var entertainmentItems:[Item] =  [Item]()
-    
-    var generalItem: [Item] = [Item]()
-    
-    var scienceItem: [Item] = [Item]()
-    
-    var sportsItem: [Item] = [Item]()
-    
-    var technologyItem: [Item] = [Item]()
-    
-    var healthItem: [Item] = [Item]()
+    fileprivate lazy var activityIndicator: UIActivityIndicatorView = {
+        let view = UIActivityIndicatorView(style: .large)
+        view.hidesWhenStopped = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
     
     
     fileprivate lazy var newsSourcesCollectionView: UICollectionView = {
@@ -75,7 +88,6 @@ class ViewController: UIViewController {
         collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
-        //collectionView.allowsSelection = true
         return collectionView
     }()
     
@@ -93,6 +105,15 @@ class ViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.title = "News Categories"
         
+        view.addSubview(activityIndicator)
+        
+        NSLayoutConstraint.activate([
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        ])
+        
+        activityIndicator.startAnimating()
+        
         NetworkManager
             .shared
             .sendRequest(to: "sources", model: Response.self, queryItems: nil)
@@ -100,51 +121,19 @@ class ViewController: UIViewController {
                 return Just(Response.placeholder).eraseToAnyPublisher()
             }.sink { (_) in
                 //
-            } receiveValue: { [unowned self ](response) in
+            } receiveValue: { [unowned self](response) in
                 
                 guard let sources = response.sources else {
                     return
                 }
                 
-                // since this is not a great method to filter the array might look into this
-                #warning("Please Refactor This")
-                
-             
-                
-                sources.forEach { (source) in
-                   
-                    if source.category == "business" {
-                        businessItems.append(Item(id: source.id ?? "", name: source.name ?? "", category: source.category ?? ""))
-                    }
-                    
-                    if source.category == "entertainment" {
-                        entertainmentItems.append(Item(id: source.id ?? "", name: source.name ?? "", category: source.category ?? ""))
-                    }
-                    
-                    if source.category == "health" {
-                        healthItem.append(Item(id: source.id ?? "", name: source.name ?? "", category: source.category ?? ""))
-                    }
-                    
-                    if source.category == "sports" {
-                        sportsItem.append(Item(id: source.id ?? "", name: source.name ?? "", category: source.category ?? ""))
-                    }
-                    
-                    if source.category == "science" {
-                        scienceItem.append(Item(id: source.id ?? "", name: source.name ?? "", category: source.category ?? ""))
-                    }
-                    
-                    if source.category == "technology" {
-                        technologyItem.append(Item(id: source.id ?? "", name: source.name ?? "", category: source.category ?? ""))
-                    }
-                    
-                    if source.category == "general" {
-                        generalItem.append(Item(id: source.id ?? "", name: source.name ?? "", category: source.category ?? ""))
-                    }
-                }
+                self.groupedSource = Dictionary(grouping: sources) { $0.category! }
                 
                 self.configureDataSource()
                 
                 self.configureSnapshot()
+                
+                activityIndicator.stopAnimating()
                 
             }.store(in: &subscription)
     }
@@ -212,9 +201,10 @@ class ViewController: UIViewController {
                 fatalError()
             }
             
-            cell.newsTitle = item.name
-            
-            
+            if let item = item as? Response.Source {
+                cell.titleLabel.text = item.name
+            }
+        
             return cell
             
             
@@ -235,7 +225,7 @@ class ViewController: UIViewController {
     
     func configureSnapshot() {
         
-        var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+        var snapshot = NSDiffableDataSourceSnapshot<Section, AnyHashable>()
         
         Section.allCases.forEach { (section) in
             
@@ -243,21 +233,20 @@ class ViewController: UIViewController {
             
             switch section {
             
-            
             case .Business:
-                snapshot.appendItems(businessItems, toSection: .Business)
+                snapshot.appendItems(groupedSource[section.name] ?? [], toSection: .Business)
             case .Entertainment:
-                snapshot.appendItems(entertainmentItems,toSection: .Entertainment)
+                snapshot.appendItems(groupedSource[section.name] ?? [] ,toSection: .Entertainment)
             case .General:
-                snapshot.appendItems(generalItem, toSection: .General)
+                snapshot.appendItems(groupedSource[section.name] ?? [], toSection: .General)
             case .Health:
-                snapshot.appendItems(healthItem, toSection: .Health)
+                snapshot.appendItems(groupedSource[section.name] ?? [], toSection: .Health)
             case .Science:
-                snapshot.appendItems(scienceItem, toSection: .Science)
+                snapshot.appendItems(groupedSource[section.name] ?? [], toSection: .Science)
             case .Sports:
-                snapshot.appendItems(sportsItem, toSection: .Sports)
+                snapshot.appendItems(groupedSource[section.name] ?? [], toSection: .Sports)
             case .Technology:
-                snapshot.appendItems(technologyItem, toSection: .Technology)
+                snapshot.appendItems(groupedSource[section.name] ?? [], toSection: .Technology)
 
             }
         }
@@ -268,12 +257,11 @@ class ViewController: UIViewController {
 
 extension ViewController: UICollectionViewDelegate {
     
-    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-    
-        guard  let item = dataSource.itemIdentifier(for: indexPath) else {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard  let item = dataSource.itemIdentifier(for: indexPath) as? Response.Source else {
             return
         }
         
-        print(item)
+        navigationController?.pushViewController(CategoriesNewsExplorerViewController(item: item), animated: true)
     }
 }

@@ -7,10 +7,11 @@
 
 import UIKit
 import Combine
+import TimelaneCombine
 
 class NewsBrowserViewController: UITableViewController {
     
-    var subscription: Set<AnyCancellable> = Set<AnyCancellable>()
+    var subscription: Set<AnyCancellable> = []
     
     fileprivate lazy var searchController: UISearchController = {
         let controller = UISearchController(searchResultsController: nil)
@@ -19,13 +20,15 @@ class NewsBrowserViewController: UITableViewController {
         return controller
     }()
     
+    // MARK:- Section Definition
+    
     enum Section {
         case main
     }
     
     var dataSource: UITableViewDiffableDataSource<Section, Everything.Articles>!
     
-    var item: [Everything.Articles] = [Everything.Articles]()
+    var item: [Everything.Articles] = []
     
     fileprivate lazy var activityIndicator: UIActivityIndicatorView = {
         let view = UIActivityIndicatorView(style: .large)
@@ -35,6 +38,7 @@ class NewsBrowserViewController: UITableViewController {
     }()
     
     
+    //MARK:- LifeCycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -94,12 +98,11 @@ class NewsBrowserViewController: UITableViewController {
         configureDataSource()
         
         configureSearch()
-        
-        
-        
     }
     
-    func configureSearch() {
+    // MARK:- Search Configuration
+    
+    fileprivate func configureSearch() {
         
         let searchPublisher = NotificationCenter.default.publisher(for: UISearchTextField.textDidChangeNotification, object: searchController.searchBar.searchTextField)
         
@@ -112,17 +115,21 @@ class NewsBrowserViewController: UITableViewController {
             return String().lowercased()
             
         }.debounce(for: .milliseconds(500), scheduler: RunLoop.main)
+        .lane("Search")
         .removeDuplicates()
         .sink {[unowned self] (string) in
             self.startSearching(with: string)
-            activityIndicator.startAnimating()
+            
+            string.isEmpty ? activityIndicator.stopAnimating() : activityIndicator.startAnimating()
             
         }.store(in: &subscription)
         
         
     }
     
-    func startSearching(with query: String) {
+    // MARK:- Begin Search
+    
+    fileprivate func startSearching(with query: String) {
         
         let networkPublisher = NetworkManager.shared.sendRequest(to: ApiConstants.EndPointForEverything.description,
                                                                  model: Everything.self,
@@ -133,10 +140,9 @@ class NewsBrowserViewController: UITableViewController {
                 return Just(Everything.placeholder).eraseToAnyPublisher()
             }.sink { (_) in
                 //
-            } receiveValue: { (everything) in
+            } receiveValue: {[unowned self] (everything) in
                 
                 guard let articles = everything.articles else {
-                    
                     return
                 }
                 
@@ -146,7 +152,9 @@ class NewsBrowserViewController: UITableViewController {
             }.store(in: &subscription)
     }
     
-    func configureDataSource() {
+    // MARK:- DataSource
+    
+    fileprivate func configureDataSource() {
         
         dataSource = .init(tableView: tableView, cellProvider: { (tableView, indexPath, articles) -> UITableViewCell? in
             guard let cell = tableView.dequeueReusableCell(withIdentifier: "browseMe") as? BrowserCell else {
@@ -170,7 +178,7 @@ class NewsBrowserViewController: UITableViewController {
         
     }
     
-    func updateDataSource(with item: [Everything.Articles]) {
+    fileprivate func updateDataSource(with item: [Everything.Articles]) {
         var snapshot = dataSource.snapshot()
         
         snapshot.deleteAllItems()
@@ -194,9 +202,7 @@ class NewsBrowserViewController: UITableViewController {
         
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         
-       
-        
-        navigationController?.pushViewController(NewsDetailViewController(item: item), animated: true)
+        navigationController?.pushViewController(WebViewController(webViewURL: item.url), animated: true)
         
     }
 }

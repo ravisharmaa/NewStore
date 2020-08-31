@@ -6,16 +6,12 @@
 //
 
 import UIKit
-import Combine
+import SDWebImage
 
 class  NewsCell: UICollectionViewCell {
     
     let titleLabel = UILabel()
     
-    @Published
-    var newsTitle: String = String()
-    
-    var subscription: AnyCancellable!
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -24,27 +20,26 @@ class  NewsCell: UICollectionViewCell {
         
         backgroundColor = .opaqueSeparator
         
-        addSubview(titleLabel)
-        
-        titleLabel.font = UIFont.systemFont(ofSize: 17)
-        
+        titleLabel.font = UIFont.boldSystemFont(ofSize: 15)
+
         titleLabel.translatesAutoresizingMaskIntoConstraints  = false
-        
-        titleLabel.adjustsFontSizeToFitWidth = true
+
+        titleLabel.adjustsFontSizeToFitWidth = false
         
         titleLabel.numberOfLines = 0
         
         titleLabel.lineBreakMode = .byWordWrapping
         
+        [titleLabel].forEach({addSubview($0)})
+        
+        addSubview(titleLabel)
+        
         NSLayoutConstraint.activate([
-            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+            titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5),
             titleLabel.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            titleLabel.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -10)
+            titleLabel.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -20)
         ])
         
-        subscription = $newsTitle
-            .map({$0.description})
-            .assign(to: \.text, on: titleLabel)
     }
     
     required init?(coder: NSCoder) {
@@ -53,8 +48,6 @@ class  NewsCell: UICollectionViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        
-        subscription.cancel()
     }
 }
 

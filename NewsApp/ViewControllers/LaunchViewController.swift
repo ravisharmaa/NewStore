@@ -17,7 +17,7 @@ class LaunchViewController: UITabBarController {
         configureViewControllers()
     }
     
-    func configureViewControllers() {
+    fileprivate func configureViewControllers() {
         
         let featuredNewsController = UINavigationController(rootViewController: FeaturedNewsController())
         

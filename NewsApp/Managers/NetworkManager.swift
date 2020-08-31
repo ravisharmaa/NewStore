@@ -17,10 +17,10 @@ protocol ApiConfiguration {
 
 
 enum NetworkError: String, Error {
-    case InvalidURL = "The url is invalid"
-    case InvalidResponse = "The response is invalid"
-    case InvalidData = "The data is invalid"
-    case JSONError = "The json is invalid"
+    case InvalidURL = "The url is invalid."
+    case InvalidResponse = "The response is invalid."
+    case InvalidData = "The data is invalid."
+    case JSONError = "The json is invalid."
 }
 
 
@@ -50,17 +50,17 @@ extension NetworkManager: ApiConfiguration {
         return ApiConstants.NetworkPath.description
     }
     
-     func sendRequest<T: Codable>(to endpoint: String, model: T.Type, queryItems: [String: Any]?) -> AnyPublisher<T, NetworkError> {
+     func sendRequest<T: Codable>(to endpoint: String, model: T.Type, queryItems: [String: Any]?)  -> AnyPublisher<T, NetworkError> {
         
         var innerUrl = urlComponents
         
         innerUrl.path = path + endpoint
         
-        var urlQueryItem = [URLQueryItem]()
+        var urlQueryItem: [URLQueryItem] = []
         
         if let queryItems = queryItems {
             for (key, data) in queryItems where queryItems.count > 0 {
-                urlQueryItem.append(URLQueryItem(name:key, value: data as? String))
+                urlQueryItem.append(.init(name:key, value: data as? String))
             }
         }
         
@@ -70,19 +70,23 @@ extension NetworkManager: ApiConfiguration {
         
         
         guard let url = innerUrl.url else {
-           fatalError()
+            return Empty<T, NetworkError>().eraseToAnyPublisher()
         }
         
         
         let urlPublisher = URLSession.shared.dataTaskPublisher(for: url)
         
-        return urlPublisher.map({$0.data})
+        return urlPublisher.tryMap({ (element) -> Data in
             
+            guard let response = element.response as? HTTPURLResponse, response.statusCode == 200 else {
+                throw NetworkError.InvalidResponse
+            }
+                return element.data
+            })
             .decode(type: T.self, decoder: JSONDecoder())
             
             .catch({ (_) -> AnyPublisher<T, NetworkError> in
                 return Empty<T, NetworkError>().eraseToAnyPublisher()
-            })
-            .eraseToAnyPublisher()
+            }).eraseToAnyPublisher()
     }
 }

@@ -75,7 +75,7 @@ class FeaturedNewsController: UICollectionViewController {
     
     var dataSource: UICollectionViewDiffableDataSource<Section, AnyHashable>!
     
-    var subscription: Set<AnyCancellable> = Set<AnyCancellable>()
+    var subscription: Set<AnyCancellable> = []
     
     var generalItem: Everything!
     var businessItem: Everything!
@@ -184,7 +184,7 @@ class FeaturedNewsController: UICollectionViewController {
         
         let businessPublisher = NetworkManager.shared.sendRequest(to: "top-headlines", model: Everything.self, queryItems: [
                                                                     ApiConstants.CountryKeyword.description:ApiConstants.US.description, "category":"business"])
-        let techPublisher = NetworkManager.shared.sendRequest(to: "top-headlines", model: Everything.self, queryItems: ["country":"us", "category":"technology"])
+        let techPublisher =  NetworkManager.shared.sendRequest(to: "top-headlines", model: Everything.self, queryItems: ["country":"us", "category":"technology"])
         let generalPublisher = NetworkManager.shared.sendRequest(to: "top-headlines", model: Everything.self, queryItems: ["country":"us", "category":"general"])
         
         
@@ -202,7 +202,7 @@ class FeaturedNewsController: UICollectionViewController {
         
     }
     
-    func configureDataSource() {
+    fileprivate func configureDataSource() {
         
         dataSource = .init(collectionView: collectionView, cellProvider: { (collectionView, indexPath, hashedObject) -> UICollectionViewCell? in
             
