@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 class CategoriesHeader: UICollectionReusableView {
     
@@ -66,6 +67,7 @@ class CategoriesHeader: UICollectionReusableView {
         layer.addSublayer(borderLayer)
     }
     
+   
     @objc func handleSeeAll() {
         seeAllClickHandler?()
     }

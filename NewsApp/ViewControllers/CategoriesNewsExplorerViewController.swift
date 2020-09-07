@@ -134,13 +134,15 @@ class CategoriesNewsExplorerViewController: UITableViewController {
         }.debounce(for: .milliseconds(500), scheduler: RunLoop.main)
         
         .sink { [unowned self] (searchQuery) in
+            
+            if searchQuery.isEmpty {
+                return
+            }
            
             self.items = self.items.filter({ (article) -> Bool in
-                if let content = article.content {
-                    return content.contains(searchQuery)
-                }
+                guard let title = article.title else { return  false }
                 
-                return false
+                return title.contains(searchQuery)
             })
            
             

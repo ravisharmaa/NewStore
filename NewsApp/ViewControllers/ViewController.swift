@@ -71,7 +71,7 @@ class ViewController: UIViewController {
     var groupedSource: [String: [Response.Source]] = [:]
     
     fileprivate lazy var activityIndicator: UIActivityIndicatorView = {
-        let view = UIActivityIndicatorView(style: .large)
+        let view = UIActivityIndicatorView(style: .medium)
         view.hidesWhenStopped = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -127,11 +127,11 @@ class ViewController: UIViewController {
                     return
                 }
                 
-                self.groupedSource = Dictionary(grouping: sources) { $0.category! }
+                groupedSource = Dictionary(grouping: sources) { $0.category! }
                 
-                self.configureDataSource()
+                configureDataSource()
                 
-                self.configureSnapshot()
+                configureSnapshot()
                 
                 activityIndicator.stopAnimating()
                 

@@ -15,6 +15,7 @@ class FeaturedNewsController: UICollectionViewController {
         case Business
         case General
         case Technology
+        case Science
         
         var description: String {
             switch  self {
@@ -24,6 +25,8 @@ class FeaturedNewsController: UICollectionViewController {
                 return "General"
             case .Technology:
                 return "Technology"
+            case .Science:
+                return "Science"
                 
             }
         }
@@ -83,6 +86,7 @@ class FeaturedNewsController: UICollectionViewController {
     var generalItem: Everything!
     var businessItem: Everything!
     var technologyItem: Everything!
+    var scienceItem: Everything!
     
     fileprivate lazy var activityIndicator: UIActivityIndicatorView = {
         let view = UIActivityIndicatorView(style: .medium)
@@ -145,9 +149,25 @@ class FeaturedNewsController: UICollectionViewController {
         fatalError()
     }
     
+   
+
     override func viewDidLoad() {
+        
         super.viewDidLoad()
+        
         view.backgroundColor = .systemBackground
+        navigationItem.title  = "Curated News For You"
+        navigationController?.navigationBar.prefersLargeTitles = true
+        
+        
+        configureCollectionView()
+        
+        configureActivityIndicator()
+        
+        prepareNetworkRequest()
+    }
+    
+    fileprivate func configureCollectionView() {
         collectionView.register(BusinessCell.self, forCellWithReuseIdentifier: BusinessCell.reuseIdentifier)
         collectionView.register(FeaturedCell.self, forCellWithReuseIdentifier: FeaturedCell.reuseIdentifier)
         collectionView.register(CategoriesHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: CategoriesHeader.reuseIdentifier)
@@ -155,10 +175,10 @@ class FeaturedNewsController: UICollectionViewController {
         collectionView.backgroundColor = .systemBackground
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
-        
-        navigationItem.title  = "Curated News For You"
-        navigationController?.navigationBar.prefersLargeTitles = true
-        
+    }
+    
+    
+    fileprivate func configureActivityIndicator() {
         view.addSubview(activityIndicator)
         
         NSLayoutConstraint.activate([
@@ -167,26 +187,42 @@ class FeaturedNewsController: UICollectionViewController {
         ])
         
         activityIndicator.startAnimating()
+    }
+    
+    fileprivate func prepareNetworkRequest() {
         
+        // prepare publishers to send group request to network
         
         let businessPublisher = NetworkManager.shared.sendRequest(to: "top-headlines", model: Everything.self, queryItems: [
-                                                                    ApiConstants.CountryKeyword.description:ApiConstants.US.description, "category":"business"])
+                                                             ApiConstants.CountryKeyword.description:ApiConstants.US.description, "category":"business"])
         let techPublisher =  NetworkManager.shared.sendRequest(to: "top-headlines", model: Everything.self, queryItems: ["country":"us", "category":"technology"])
         let generalPublisher = NetworkManager.shared.sendRequest(to: "top-headlines", model: Everything.self, queryItems: ["country":"us", "category":"general"])
+        let sciencePublisher = NetworkManager.shared.sendRequest(to: "top-headlines", model: Everything.self, queryItems: ["country":"us", "category":"science"])
         
         
+        // combine the publishers and send request
         
-        Publishers.Zip3(businessPublisher, techPublisher, generalPublisher).receive(on: RunLoop.main).sink { (_) in
+        Publishers.Zip4(businessPublisher, techPublisher, generalPublisher, sciencePublisher).receive(on: RunLoop.main).sink { (_) in
             //
         } receiveValue: { [unowned self](everything) in
-            self.activityIndicator.stopAnimating()
-            self.businessItem = everything.0
-            self.technologyItem = everything.1
-            self.generalItem = everything.2
-            self.configureDataSource()
+
+            activityIndicator.stopAnimating()
+            businessItem = everything.0
+            technologyItem = everything.1
+            generalItem = everything.2
             
+            scienceItem = everything.3
+
+            configureDataSource()
+            
+            scrollAutomatically()
+
         }.store(in: &subscription)
+        
+        
     }
+    
+    //MARK:- Data Source Config
     
     fileprivate func configureDataSource() {
         
@@ -197,7 +233,7 @@ class FeaturedNewsController: UICollectionViewController {
             switch  section {
             case .Business:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: BusinessCell.reuseIdentifier, for: indexPath) as? BusinessCell else {
-                    return nil
+                    preconditionFailure("Could not dequeue cell")
                 }
                 
                 if let hashedObject = hashedObject as? Everything.Articles {
@@ -207,7 +243,7 @@ class FeaturedNewsController: UICollectionViewController {
                 return cell
             default:
                 guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FeaturedCell.reuseIdentifier, for: indexPath) as? FeaturedCell else {
-                    fatalError()
+                    preconditionFailure("Could not dequeue cell")
                 }
                 
                 if let hashedObject = hashedObject as? Everything.Articles {
@@ -218,29 +254,31 @@ class FeaturedNewsController: UICollectionViewController {
             }
         })
         
-        dataSource.supplementaryViewProvider = .some({ (collectionView, identifier, indexPath) -> UICollectionReusableView? in
+        dataSource.supplementaryViewProvider = .some({ (collectionView, identifier, indexPath) ->  UICollectionReusableView? in
             
             if identifier == UICollectionView.elementKindSectionHeader {
+                
                 guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: identifier, withReuseIdentifier: CategoriesHeader.reuseIdentifier, for: indexPath) as? CategoriesHeader else {
                     return nil
                 }
                 
                 header.label.text = Section(rawValue: indexPath.section)?.description
                 
-                header.seeAllClickHandler = {
+                header.seeAllClickHandler = .some({
                     
-                }
+                })
                 
                 return header
+                
             } else {
                 
                 let section = Section(rawValue: indexPath.section)!
                 
                 if section != .Business {
                     guard let supplementary = collectionView.dequeueReusableSupplementaryView(ofKind: identifier, withReuseIdentifier: BadgeView.reuseIdentifier, for: indexPath)
-                            as? BadgeView else { fatalError()}
+                            as? BadgeView else { preconditionFailure("Could not dequeue cell")}
                     
-                    supplementary.backgroundColor = .lightGray
+                    supplementary.backgroundColor = .red
                     
                     return supplementary
                 }
@@ -255,9 +293,12 @@ class FeaturedNewsController: UICollectionViewController {
         
         snapshot.appendSections(Section.allCases)
         
-        snapshot.appendItems(businessItem.articles!, toSection: .Business)
-        snapshot.appendItems(generalItem.articles!, toSection: .General)
-        snapshot.appendItems(technologyItem.articles!, toSection: .Technology)
+        // add items to sections
+        
+        snapshot.appendItems(businessItem.articles ?? [], toSection: .Business)
+        snapshot.appendItems(generalItem.articles ?? [], toSection: .General)
+        snapshot.appendItems(technologyItem.articles ?? [], toSection: .Technology)
+        snapshot.appendItems(scienceItem.articles ?? [], toSection: .Science)
         
         dataSource.apply(snapshot)
         
@@ -268,8 +309,34 @@ class FeaturedNewsController: UICollectionViewController {
         navigationController?.pushViewController(WebViewController(webViewURL: item.url), animated: true)
         
     }
+    
+    var counter = 1
+    
+    func scrollAutomatically() {
+        
+        let start = Date()
+        
+        let timer = Timer.TimerPublisher(interval: 4.0, runLoop: .main, mode: .common).autoconnect()
+        
+        timer.map { (output) -> TimeInterval in
+            return output.timeIntervalSince(start)
+        }.map { (interval) -> Int in
+            return Int(interval)
+        }.sink { [unowned self] (time) in
+            
+            let indexPath = IndexPath(item: counter, section: 0)
+            
+            collectionView.scrollToItem(at: indexPath, at: .left, animated: true)
+            
+            if counter == self.businessItem.articles?.count {
+                timer.upstream.connect().cancel()
+            }
+            
+            counter += 1
+            
+        }.store(in: &subscription)
+    }
 }
-
 
 class BadgeView: UICollectionReusableView {
     

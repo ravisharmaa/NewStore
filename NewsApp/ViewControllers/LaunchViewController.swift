@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 class LaunchViewController: UITabBarController {
     
@@ -16,6 +17,8 @@ class LaunchViewController: UITabBarController {
         
         configureViewControllers()
     }
+    
+    var subscription: AnyCancellable!
     
     fileprivate func configureViewControllers() {
         

@@ -118,7 +118,8 @@ class NewsBrowserViewController: UITableViewController {
         .lane("Search")
         .removeDuplicates()
         .sink {[unowned self] (string) in
-            self.startSearching(with: string)
+            
+            startSearching(with: string)
             
             string.isEmpty ? activityIndicator.stopAnimating() : activityIndicator.startAnimating()
             
@@ -146,8 +147,9 @@ class NewsBrowserViewController: UITableViewController {
                     return
                 }
                 
-                self.item = articles
-                self.updateDataSource(with: self.item)
+                item = articles
+                
+                updateDataSource(with: item)
                 
             }.store(in: &subscription)
     }
@@ -157,6 +159,7 @@ class NewsBrowserViewController: UITableViewController {
     fileprivate func configureDataSource() {
         
         dataSource = .init(tableView: tableView, cellProvider: { (tableView, indexPath, articles) -> UITableViewCell? in
+            
             guard let cell = tableView.dequeueReusableCell(withIdentifier: BrowserCell.reuseIdentifier) as? BrowserCell else {
                 return nil
             }
@@ -172,7 +175,7 @@ class NewsBrowserViewController: UITableViewController {
         
         snapshot.appendSections([.main])
         
-        snapshot.appendItems(item)
+        snapshot.appendItems([])
         
         dataSource.apply(snapshot, animatingDifferences: true)
         

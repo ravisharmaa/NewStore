@@ -40,8 +40,33 @@ struct NetworkManager {
     
 }
 
+
+
+enum RequestMethod: CustomStringConvertible {
+    case get
+    case post
+    case put
+    case patch
+    case delete
+    
+    var description: String {
+        switch self {
+        case .get:
+            return "GET"
+        case .post:
+            return "POST"
+        case .put:
+            return "PUT"
+        case .patch:
+            return "PATCH"
+        case .delete:
+            return "DELETE"
+        }
+    }
+}
+
 extension NetworkManager: ApiConfiguration {
-     
+    
     internal var apiKey: String {
         return ApiConstants.ApiKey.description
     }
@@ -50,7 +75,7 @@ extension NetworkManager: ApiConfiguration {
         return ApiConstants.NetworkPath.description
     }
     
-     func sendRequest<T: Codable>(to endpoint: String, model: T.Type, queryItems: [String: Any]?)  -> AnyPublisher<T, NetworkError> {
+    func sendRequest<T: Codable>(to endpoint: String, method: RequestMethod = .get, model: T.Type, queryItems: [String: Any]?, postData: [String: Any]? = nil)  -> AnyPublisher<T, NetworkError> {
         
         var innerUrl = urlComponents
         
@@ -65,7 +90,7 @@ extension NetworkManager: ApiConfiguration {
         }
         
         urlQueryItem.append(URLQueryItem(name: ApiConstants.ApiKeyPrefix.description, value: apiKey))
-       
+        
         innerUrl.queryItems = urlQueryItem
         
         
@@ -73,20 +98,24 @@ extension NetworkManager: ApiConfiguration {
             return Empty<T, NetworkError>().eraseToAnyPublisher()
         }
         
+        var urlRequest = URLRequest(url: url)
         
-        let urlPublisher = URLSession.shared.dataTaskPublisher(for: url)
+        urlRequest.httpMethod = method.description
+        
+        
+        let urlPublisher = URLSession.shared.dataTaskPublisher(for: urlRequest)
         
         return urlPublisher.tryMap({ (element) -> Data in
             
             guard let response = element.response as? HTTPURLResponse, response.statusCode == 200 else {
                 throw NetworkError.InvalidResponse
             }
-                return element.data
-            })
-            .decode(type: T.self, decoder: JSONDecoder())
-            
-            .catch({ (_) -> AnyPublisher<T, NetworkError> in
-                return Empty<T, NetworkError>().eraseToAnyPublisher()
-            }).eraseToAnyPublisher()
+            return element.data
+        })
+        .decode(type: T.self, decoder: JSONDecoder())
+        
+        .catch({ (_) -> AnyPublisher<T, NetworkError> in
+            return Empty<T, NetworkError>().eraseToAnyPublisher()
+        }).eraseToAnyPublisher()
     }
 }

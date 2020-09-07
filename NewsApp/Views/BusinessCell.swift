@@ -31,7 +31,7 @@ class BusinessCell: UICollectionViewCell {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 8
-        //imageView.contentMode = .scaleAspectFit
+        imageView.contentMode = .scaleAspectFill
         imageView.image = UIImage(named: "bloomberg")
         return imageView
     }()
@@ -72,8 +72,6 @@ class BusinessCell: UICollectionViewCell {
         
         imageView.addSubview(activityIndicator)
         
-        
-        
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
             stackView.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor),
@@ -85,7 +83,7 @@ class BusinessCell: UICollectionViewCell {
         ])
     }
     
-    func downloadImage(from urlString: String) {
+    fileprivate func downloadImage(from urlString: String) {
         
         guard let url = URL(string: urlString) else {
             return

@@ -15,7 +15,7 @@ class BrowserCell: UITableViewCell {
         
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.layer.cornerRadius = 8
-        imageView.contentMode = .scaleToFill
+        imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         
         imageView.heightAnchor.constraint(equalToConstant: 80).isActive = true
@@ -64,8 +64,6 @@ class BrowserCell: UITableViewCell {
         
         stack.alignment = .top
         
-        
-        
         stack.spacing = 10
         
         addSubview(stack)
@@ -94,7 +92,8 @@ class BrowserCell: UITableViewCell {
             return
         }
         
-        subscription = URLSession.shared.dataTaskPublisher(for: url).map({UIImage(data: $0.data)})
+        subscription = URLSession.shared.dataTaskPublisher(for: url)
+            .map({UIImage(data: $0.data)})
             .receive(on: RunLoop.main)
             .replaceError(with: UIImage(named: "bloomberg"))
             .assign(to: \.image, on: thumbnailImage)
@@ -102,6 +101,6 @@ class BrowserCell: UITableViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-       // subscription.cancel()
+        subscription.cancel()
     }
 }
